@@ -1,9 +1,9 @@
-import { Doctor } from "@/entities/Doctor";
-import { Slot } from "@/models/appointments/Slot";
-import { AddDoctorInput } from "@/models/doctor/AddDoctorInput";
-import { NotImplementedException } from "@/models/errors/NotImplementedException";
-import { DoctorService } from "@/services/DoctorService";
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Doctor } from "@/entities/Doctor"
+import { Slot } from "@/models/appointments/Slot"
+import { AddDoctorInput } from "@/models/doctor/AddDoctorInput"
+import { NotImplementedException } from "@/models/errors/NotImplementedException"
+import { DoctorService } from "@/services/DoctorService"
+import { Arg, Mutation, Query, Resolver } from "type-graphql"
 
 @Resolver(() => Doctor)
 export class DoctorResolver {
@@ -28,6 +28,6 @@ export class DoctorResolver {
     @Arg('from') from: Date,
     @Arg('to') to: Date,
   ): Promise<Slot[]> {
-    throw new NotImplementedException("slots")
+    return this.doctorService.getAvailableSlots(from, to);
   }
 }
