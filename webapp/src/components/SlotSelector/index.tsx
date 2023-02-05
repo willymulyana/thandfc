@@ -1,4 +1,5 @@
-import { Doctor, Slot, useSlotsQuery } from '@/generated/core.graphql'
+import BookFormModal from '@/components/BookFormModal'
+import { Doctor, Slot, SlotInput, useSlotsQuery } from '@/generated/core.graphql'
 import { CheckIcon } from '@chakra-ui/icons'
 import { Box, Button, Center, Flex, FlexProps, Heading, Progress, Text, useColorMode, Wrap, WrapItem } from '@chakra-ui/react'
 import { format, isEqual, isSameDay, parseISO } from 'date-fns'
@@ -37,6 +38,8 @@ const SlotSelector: FC<Props> = ({
   );
   const [availableSlotsOnDate, setAvailableSlotsOnDate] = useState<Slot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<Slot>();
+  const [injectedData, setInjectedData] = useState<{doctor:Doctor, slot:SlotInput}>(null as any);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   const minStartDate = moment(minimumStartDate);
   const maxStartDate = moment(maximumStartDate);
@@ -55,7 +58,8 @@ const SlotSelector: FC<Props> = ({
 
   useEffect(() => {
     if(selectedSlot) {
-      // TODO: show booking appointment form popup
+      setInjectedData({doctor:selectedDoctor as Doctor, slot:selectedSlot});
+      setModalVisible(true);
     }
   }, [selectedSlot]);
 
@@ -135,6 +139,9 @@ const SlotSelector: FC<Props> = ({
           </WrapItem>
         </Wrap>
       </Center>
+
+      <BookFormModal injectedData={injectedData} 
+          visible={modalVisible} onClose={()=>setModalVisible(false)} />
     </Box>
     
   );
