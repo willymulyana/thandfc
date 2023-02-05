@@ -1,18 +1,22 @@
-import { Appointment } from "@/entities/Appointment";
-import { Doctor } from "@/entities/Doctor";
-import { BookAppointmentInput } from "@/models/appointments/BookAppointmentInput";
-import { faker } from "@faker-js/faker";
-import createMockRepo from "@test/mocks/mockRepo";
-import { addDays, addMinutes, nextMonday, setHours, setMinutes } from "date-fns";
-import Container from "typedi";
-import { ConnectionManager, Repository } from "typeorm";
-import { AppointmentService } from "./AppointmentService";
+import { Appointment } from "@/entities/Appointment"
+import { Doctor } from "@/entities/Doctor"
+import { BookAppointmentInput } from "@/models/appointments/BookAppointmentInput"
+import { faker } from "@faker-js/faker"
+import { addDays, addMinutes, nextMonday, setHours, setMinutes } from "date-fns"
+import { anything, instance, mock, verify, when } from "ts-mockito"
+import { Repository } from "typeorm"
+import { AppointmentService } from "./AppointmentService"
 
-const mockRepo: Partial<Repository<Appointment>> = {};
 
 describe('AppointmentService', () => {
-  beforeAll(() => {
-    Container.set(ConnectionManager, createMockRepo(mockRepo));
+  let sut: AppointmentService;
+  let mockAppointmentRepo: Repository<Appointment>;
+  let mockDoctorRepo: Repository<Doctor>;
+
+  beforeEach(() => {
+    mockAppointmentRepo = mock(Repository);
+    mockDoctorRepo = mock(Repository)
+    sut = new AppointmentService(instance(mockAppointmentRepo), instance(mockDoctorRepo));
   });
 
   describe('bookAppointment', () => {
@@ -27,12 +31,9 @@ describe('AppointmentService', () => {
       appointment.startTime = startTime;
       appointment.durationMinutes = 15;
       appointment.doctor = doctor;
+      doctor.appointments = [appointment];
 
-      mockRepo.findOne = jest.fn(() => {
-        return Promise.resolve(appointment);
-      });
-
-      const sut = Container.get(AppointmentService);
+      when(mockDoctorRepo.findOne(anything(),anything())).thenResolve(doctor);
 
       const bookAppointmentInput: BookAppointmentInput = {
         slot: { start: startTime, end: addMinutes(startTime, 15), doctorId: doctor.id },
@@ -40,12 +41,12 @@ describe('AppointmentService', () => {
         description: faker.lorem.lines(1),
       };
 
-      const call = () => {
-        sut.bookAppointment(bookAppointmentInput);
+      const call = async () => {
+        await sut.bookAppointment(bookAppointmentInput);
+        verify(mockDoctorRepo.findOne(anything(), anything())).called();
       }
 
-      expect(call).toThrow(Error);
-      expect(call).toThrow("Appointment slot already taken");
+      expect(call).rejects.toThrow("Appointment slot already taken");
     });
   });
 });

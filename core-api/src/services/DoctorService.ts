@@ -1,7 +1,7 @@
 import { Doctor } from "@/entities/Doctor"
 import { Slot } from "@/models/appointments/Slot"
 import { NotImplementedException } from "@/models/errors/NotImplementedException"
-import { addMinutes, eachDayOfInterval, format, isBefore, setHours, setMinutes, startOfMinute } from "date-fns"
+import { addMinutes, eachDayOfInterval, format, isBefore, isEqual, setHours, setMinutes, startOfMinute } from "date-fns"
 import { Service } from "typedi"
 import { Repository } from "typeorm"
 import { InjectRepository } from "typeorm-typedi-extensions"
@@ -35,24 +35,30 @@ export class DoctorService {
           daysBetween.forEach((day)=>{
             doctors.forEach(doctor=>{
               for(let av of doctor.availability) {
-                const endDate = startOfMinute(setMinutes(setHours( from, parseInt(av.endTimeUtc.split(':')[0])), parseInt(av.endTimeUtc.split(':')[1])));
-                if(av.dayOfWeek===parseInt(format(day, "e"))) { // find match between doctor availability's dayOfWeek and day between 'from' to 'to'
-                  let currentDate = startOfMinute(setMinutes(setHours( from, parseInt(av.startTimeUtc.split(':')[0])), parseInt(av.startTimeUtc.split(':')[1])));
-
-                  for(let ap of doctor.appointments || []) {
-                    if(ap.startTime.toISOString()===currentDate.toISOString()) { // compare doctor appointment and availability
-                      //if found then increase current date for next slot interval
-                      currentDate = addMinutes(currentDate, Slot.INTERVAL);
-                    }
-                  }
+                if(av.dayOfWeek===(parseInt(format(day, "e"))-1)) { // find match between doctor availability's dayOfWeek and day between 'from' to 'to'
+                  const endOfDayAvailability = startOfMinute(setMinutes(setHours( day, parseInt(av.endTimeUtc.split(':')[0])), parseInt(av.endTimeUtc.split(':')[1])));
+                  let startOfDayAvailability = startOfMinute(setMinutes(setHours( day, parseInt(av.startTimeUtc.split(':')[0])), parseInt(av.startTimeUtc.split(':')[1])));
                   
-                  while (isBefore(currentDate, endDate)) {
-                    let slot = new Slot();
-                    slot.doctorId = doctor.id;
-                    slot.start = currentDate;
-                    slot.end = addMinutes(currentDate, Slot.INTERVAL);
-                    slots.push(slot);
-                    currentDate = slot.end;
+                  let canAddSlot;
+                  while (isBefore(startOfDayAvailability, endOfDayAvailability) && isBefore(startOfDayAvailability,daysBetween[daysBetween.length-1])) {
+                    canAddSlot = true;
+                    for(let ap of doctor.appointments || []) {
+                      if(isEqual(ap.startTime, startOfDayAvailability)) { // compare doctor appointment and availability
+                        //if the same then can't add slot and break appointments loop
+                        canAddSlot = false;
+                        break;
+                      }
+                    }
+
+                    if(canAddSlot) {
+                      let slot = new Slot();
+                      slot.doctorId = doctor.id;
+                      slot.start = startOfDayAvailability;
+                      slot.end = addMinutes(startOfDayAvailability, Slot.INTERVAL);
+                      slots.push(slot);
+                    }
+                    
+                    startOfDayAvailability = addMinutes(startOfDayAvailability, Slot.INTERVAL);
                   }
                 }
               }

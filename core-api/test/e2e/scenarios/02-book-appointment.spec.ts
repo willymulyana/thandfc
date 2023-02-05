@@ -1,18 +1,21 @@
-import { faker } from '@faker-js/faker';
+import { Appointment } from '@/entities/Appointment'
+import { BookAppointmentInput } from '@/models/appointments/BookAppointmentInput'
+import { Slot } from '@/models/appointments/Slot'
+import { faker } from '@faker-js/faker'
+import { addDays, nextMonday, setHours, setMinutes } from "date-fns"
+import { createApi } from '../api'
+import { bookAppointment } from '../commands/appointments'
+import { fetchSlots } from '../commands/doctors'
 
-import { createApi } from '../api';
 
-import { fetchSlots } from '../commands/doctors';
-import { bookAppointment } from '../commands/appointments';
-import { BookAppointmentInput } from '@/models/appointments/BookAppointmentInput';
-import { Appointment } from '@/entities/Appointment';
-import { Slot } from '@/models/appointments/Slot';
 
 const api = createApi();
 
 describe('Book appointment scenario', () => {
   it('should book appointment successfully', async () => {
-    const slotsRes = await fetchSlots(api);
+    const from = setMinutes(setHours(addDays(nextMonday(new Date()), 1), 9), 0);
+    const to = addDays(from, 7);
+    const slotsRes = await fetchSlots(api, from, to);
 
     const slots = slotsRes.body.data.slots as Slot[];
     const selectedSlot = slots[0];
