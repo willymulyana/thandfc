@@ -66,9 +66,9 @@ Read webapp/README.md for instructions on how to run the solution and how to use
 ## Marking
 
 For candidate:
-- total time taken:   // please fill this in
+- total time taken: around 36 hours, in 3 days ... this is short answer :D kindly check some remarks below, thanks!
 
-- For reviewer 
+For reviewer 
   - number of backend unit tests passing
   - frontend integrated with api
   - followed existing patterns
@@ -77,4 +77,10 @@ For candidate:
   - UI is clean and follows best practices
   - UI implemented following a clear pattern
   - UX decisions follow best practices
+  
+Remarks from test taker: Willy ( willymulyana@[gmail, yahoo].com / +6281214059889 )
+- I receive the test on Tuesday 31 January 2023 8 PM West Indonesian Time, as still working for current company I didn't have time until Thursday PM, can focus and start making changes since Friday as taking day off :D
+- Assestment/test wise, almost all is new for me :D especially the stack (Nest, Postgres, Next) ... but essentially I managed to understand the tasks with idea to solve it
+- During the process I learn many things: the stack, unit/e2e test from backend side .. and more! All is from new things so I learn 'what', 'how' .. chatGPT really aid well, understand why Google fear it :D
+- I think I managed to solve assigned tasks, all test have success result ... frontend implemented with also polish the UI, still room for improvements
 
